@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 `define WAIT 3'b000
 `define SWAP 3'b001
 `define SHIFT 3'b010
