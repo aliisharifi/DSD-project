@@ -1,6 +1,6 @@
 # DSD-project
 Digital System Design Project  
-Matrix Multiplier
+Matrix Multiplier  
 Sharif University of Technology  
 Ali Sharifi  
 Amirhossein Nedaeipour Asl  
