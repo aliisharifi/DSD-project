@@ -79,12 +79,12 @@ module PE #(parameter log_size, parameter index)
 				// check it !
 				if(&counter1[log_size-1:0]) begin
 					state <= state1;
+					count1_enb <= 0;
 				end
 			end
 			
 			state1:
 			begin
-				count1_enb <= 0;
 				counter1_rst <= 1;
 				counter2_rst <= 1;
 				
@@ -100,6 +100,8 @@ module PE #(parameter log_size, parameter index)
 			
 			state2:
 			begin
+				count1_enb <= 0;
+				count2_enb <= 0;
 				counter1_rst <= 0;
 				counter2_rst <= 0;
 				
@@ -181,14 +183,18 @@ module PE #(parameter log_size, parameter index)
 				if(counter1[log_size]) begin
 					count2_enb <= 1;
 				end
-				if(counter1[log_size] && counter2[log_size])
+				if(counter2[log_size]) begin
 					state <= finish;
-				else
-					state <= state1;
+				end
+				else begin
+					state <= state2;
+				end
 			end
 			
 			finish:
 			begin
+				count1_enb <= 0;
+				count2_enb <= 0;
 				r_output_stb <= 1;
 				state <= finish;
 			end
@@ -243,8 +249,8 @@ module PE #(parameter log_size, parameter index)
 	adder ADDER(
         .input_a(mul_result),
         .input_b(mbr),
-        .input_a_stb(1),
-        .input_b_stb(1),
+        .input_a_stb(1'b1),
+        .input_b_stb(1'b1),
         .output_z_ack(ack_a),
         .clk(clk),
         .rst(rst_a),
@@ -254,8 +260,8 @@ module PE #(parameter log_size, parameter index)
 	multiplier MULTIPLIER(
         .input_a(a_buffer),
         .input_b(bc),
-        .input_a_stb(1),
-        .input_b_stb(1),
+        .input_a_stb(1'b1),
+        .input_b_stb(1'b1),
         .output_z_ack(ack_m),
         .clk(clk),
         .rst(rst_m),
