@@ -7,7 +7,11 @@ module matrix_multiplier #(parameter log_size)
 	input clk,
 	input out_ack,
 	output out_stb,
-	output in_ack
+	output in_ack,
+	input [log_size - 1 : 0] row,
+	input [log_size - 1 : 0] column,
+	output [31:0] out_number,
+	input output_select
 );
 
 
@@ -18,40 +22,18 @@ module matrix_multiplier #(parameter log_size)
 	///////////
 	wire [31:0] a_wires [n : 0];
 	wire [31:0] b_wires [n : 0];
-	wire stb_wires [n : 0];
+	wire [n : 1] stb_wires;
 	wire ack_wires [n : 0];
 	wire b_valid_wires [n : 0];
-	wire [31:0] c_wires [n : 0];
+	wire [31:0] c_wires [n-1 : 0];
 		
-	
-	//for(i = 0; i < n; i = i + 1)
-	//begin
-	//	assign stb_wires[i] = 1;
-	//end
-
 	assign a_wires[0] = a_queue[n];
 	assign b_wires[0] = b;
-	assign stb_wires[0] = in_stb;
-	assign stb_wires[n] = out_stb;
 	assign ack_wires[n] = out_ack;
 	assign ack_wires[0] = in_ack;
 	assign b_valid_wires[0] = in_stb;
-
-/*
-generate
-always @(posedge clk)
-begin
-	if(~rst) begin
-		for(j=0; j<n; j = j+1)
-		begin
-			a_queue[j+1] <= 32'd0;
-		end
-	end
-	end
-
-endgenerate
-*/
-
+	assign out_stb = &stb_wires;
+	assign out_number = c_wires[column];
 
 generate
 // n ta regiser seri vase a ha
@@ -71,8 +53,6 @@ generate
 endgenerate	
 	
 	
-
-
 genvar i;
 generate
 	for(i = 0; i < n; i = i + 1)
@@ -88,8 +68,8 @@ generate
 			.input_ack(ack_wires[i]),
 			.input_b_valid(b_valid_wires[i]),
 			.output_b_valid(b_valid_wires[i+1]),
-			//input [log_size-1:0] addr,
-			//input mem_select,
+			.addr(row),
+			.mem_select(output_select),
 			.c(c_wires[i]),
 			.output_b(b_wires[i+1]), 
 			.output_a(a_wires[i+1]),
@@ -103,6 +83,9 @@ endmodule
 
 module matrix_multiplier_tb;
 
+	parameter n = 4;
+	parameter log_size = 2;
+
 	reg [31:0] a;
 	reg [31:0] b;
 	reg stb;
@@ -111,14 +94,18 @@ module matrix_multiplier_tb;
 	reg ack;
 	wire out_stb;
 	wire in_ack;
+	reg [log_size - 1 : 0] row;
+	reg [log_size - 1 : 0] column;
+	wire [31:0] out_number;
+	reg output_select;
 	
-	parameter n = 4;
+	
 	
 	reg [32:0] a_matrix [n**2 - 1:0];
 	reg [32:0] b_matrix [n**2 - 1:0];
 	
 	
-	matrix_multiplier #(2) mm
+	matrix_multiplier #(log_size) mm
 	(
 	.a(a),
 	.b(b),
@@ -127,7 +114,11 @@ module matrix_multiplier_tb;
 	.clk(clk),
 	.out_ack(ack),
 	.out_stb(out_stb),
-	.in_ack(in_ack)
+	.in_ack(in_ack),
+	.row(row),
+	.column(column),
+	.out_number(out_number),
+	.output_select(output_select)
 	);
 	
 	initial
@@ -165,18 +156,29 @@ module matrix_multiplier_tb;
 		
 	end
 	
+	integer j;
+	integer k;
+	integer fout;
+	
+	initial
+	begin
+		fout = $fopen("output.txt", "w");
+		//wait (out_stb);
+		#2000
+		for(j = 0; j < n; j = j + 1)
+		begin
+			row <= j[log_size - 1 : 0] ;
+			for(k = 0; k < n; k = k + 1)
+			begin
+				column <= k[log_size - 1 : 0];
+				#40
+				$fdisplay(fout, "%8h", out_number);
+			end
+		end
+		
+		$fclose(fout);
+	end
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	
