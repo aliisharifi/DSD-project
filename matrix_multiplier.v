@@ -7,12 +7,13 @@ module matrix_multiplier #(parameter log_size)
 	input clk,
 	input out_ack,
 	output out_stb,
-	output in_ack);
+	output in_ack
+);
 
 
 	parameter n = 2 ** log_size;
  
-	reg [31:0] a_queue [n : 1];
+	reg [31:0] a_queue [n : 0];
 	
 	///////////
 	wire [31:0] a_wires [n : 0];
@@ -51,23 +52,27 @@ begin
 endgenerate
 */
 
+
 generate
 // n ta regiser seri vase a ha
 	integer k;
 	always @(posedge clk) begin
 		if(ack_wires[0])
 		begin
-			if(~rst) a_queue[1] <= 32'd0;
-			else a_queue[1] <= a;
-			for(k=1; k<n; k = k+1)
+			if(rst) a_queue[0] <= 32'd0;
+			else a_queue[0] <= a;
+			for(k=0; k<n; k = k+1)
 			begin
-				if(~rst) a_queue[k+1] <= 32'd0;
+				if(rst) a_queue[k+1] <= 32'd0;
 				else a_queue[k+1] <= a_queue[k];
 			end
 		end
 	end	
 endgenerate	
 	
+	
+
+
 genvar i;
 generate
 	for(i = 0; i < n; i = i + 1)
@@ -107,13 +112,13 @@ module matrix_multiplier_tb;
 	wire out_stb;
 	wire in_ack;
 	
-	parameter n = 2;
+	parameter n = 4;
 	
 	reg [32:0] a_matrix [n**2 - 1:0];
 	reg [32:0] b_matrix [n**2 - 1:0];
 	
 	
-	matrix_multiplier #(1) mm
+	matrix_multiplier #(2) mm
 	(
 	.a(a),
 	.b(b),
@@ -127,8 +132,8 @@ module matrix_multiplier_tb;
 	
 	initial
 	begin
-		   $readmemh("a_matrix.txt", a_matrix, 0, n**2 - 1); //filling memory matrix with file content
-		   $readmemh("b_matrix.txt", b_matrix, 0, n**2 - 1); //filling memory matrix with file content
+		   $readmemh("sample_inputs/a_matrix_1.txt", a_matrix, 0, n**2 - 1); //filling memory matrix with file content
+		   $readmemh("sample_inputs/b_matrix_1.txt", b_matrix, 0, n**2 - 1); //filling memory matrix with file content
 	end
 	
 	
@@ -144,12 +149,12 @@ module matrix_multiplier_tb;
 	initial
 	begin
 		rst <= 1;
-		#15 
+		#50 
 		rst <= 0;
-		
+		stb <= 1;
 		for(i = 0; i < n**2 ; i = i + 1)
 		begin
-			#20
+			#40
 			//if (in_ack)
 			begin
 				a <= a_matrix[i];
