@@ -44,7 +44,7 @@ module PE #(parameter log_size, parameter index)
 			counter1_rst <= 1;
 			counter2_rst <= 0;
 			r_output_stb <= 0;
-			r_input_ack <= 0;
+			r_input_ack <= 1;
 			shift <= 0;
 			load_bc <= 0;
 			rst_m <= 0;
@@ -107,12 +107,12 @@ module PE #(parameter log_size, parameter index)
 				
 				state <= state2;
 				
-				r_input_ack <= 1;
-				if(stb && !next_PE_ack) begin
+				r_input_ack <= 0;
+				if(stb && next_PE_ack) begin
 					a_enb <= 1;
 					b_enb <= 1;
 					r_input_b_valid <= input_b_valid;
-					r_input_ack <= 0;
+					r_input_ack <= 1;
 					state <= state3;
 				end
 			end
