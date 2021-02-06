@@ -20,7 +20,7 @@ module PE #(parameter log_size, parameter index)
 	reg [31:0] a_buffer;
 	reg [31:0] bu_buffer, bm_buffer, bl_buffer;
 	reg [31:0] bc;
-	reg [31:0] mem [log_size-1:0];
+	reg [31:0] mem [2**log_size-1:0];
 	reg [log_size:0] counter1, counter2;
 
 	wire adder_stb;
@@ -77,7 +77,7 @@ module PE #(parameter log_size, parameter index)
 				count1_enb <= 1;
 				state <= rst_mem;
 				// check it !
-				if(&counter1[log_size-1:0]) begin
+				if(counter1[log_size]) begin
 					state <= state1;
 					count1_enb <= 0;
 				end
@@ -204,7 +204,7 @@ module PE #(parameter log_size, parameter index)
 	
 	
 	wire mem_sel = sel3 ? m_s : mem_select;
-	wire mem_addr = sel2 ? controll_addr : addr;
+	wire [log_size-1:0] mem_addr = sel2 ? controll_addr : addr;
 	wire mem_r_nw = sel1 ? r_nw : 1;
 	
 	
