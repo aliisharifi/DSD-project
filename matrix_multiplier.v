@@ -23,13 +23,13 @@ module matrix_multiplier #(parameter log_size)
 	wire [31:0] a_wires [n : 0];
 	wire [31:0] b_wires [n : 0];
 	wire [n : 1] stb_wires;
-	wire ack_wires [n : 0];
+	wire [n : 0] ack_wires ;
 	wire b_valid_wires [n : 0];
 	wire [31:0] c_wires [n-1 : 0];
 		
 	assign a_wires[0] = a_queue[n];
 	assign b_wires[0] = b;
-	assign ack_wires[n] = out_ack;
+	assign ack_wires[n] = 1'b1;
 	assign ack_wires[0] = in_ack;
 	assign b_valid_wires[0] = in_stb;
 	assign out_stb = &stb_wires;
@@ -140,9 +140,9 @@ module matrix_multiplier_tb;
 	initial
 	begin
 		rst <= 1;
-		#50 
+		#200 
 		rst <= 0;
-		stb <= 1;
+		stb <= 0;
 		for(i = 0; i < n**2 ; i = i + 1)
 		begin
 			#40
@@ -150,6 +150,7 @@ module matrix_multiplier_tb;
 			begin
 				a <= a_matrix[i];
 				b <= b_matrix[i];
+				stb <= 1;
 			end
 			//else i = i - 1;
 		end
@@ -164,6 +165,8 @@ module matrix_multiplier_tb;
 	begin
 		fout = $fopen("output.txt", "w");
 		//wait (out_stb);
+	
+		output_select <= 1;
 		#2000
 		for(j = 0; j < n; j = j + 1)
 		begin
